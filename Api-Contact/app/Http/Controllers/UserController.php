@@ -24,7 +24,7 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return response()->json(['message' => 'Utilisateur enregistrer avec succes']);
+        return response()->json(['message' => 'Utilisateur enregistré avec succès'], 201);
     }
 
     public function login(Request $request)
@@ -45,12 +45,12 @@ class UserController extends Controller
         $user = $request->user();
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json(['access_token' => $token, 'token_type' => 'Bearer']);
+        return response()->json(['access_token' => $token, 'token_type' => 'Bearer'], 200);
     }
 
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();
-        return response()->json(['message' => 'Deconnexion reussie']);
+        return response()->json(['message' => 'Déconnexion réussie'], 200);
     }
 }

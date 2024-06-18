@@ -6,13 +6,14 @@ use App\Models\Contact;
 use App\Models\Telephone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ContactController extends Controller
 {
     public function getAll()
     {
         $contacts = Auth::user()->contacts()->with('telephones')->get();
-        return response()->json($contacts);
+        return response()->json(['message' => 'Liste des contacts récupérée avec succès', 'contacts' => $contacts], 200);
     }
 
     public function createContact(Request $request)
@@ -37,26 +38,26 @@ class ContactController extends Controller
             ]);
         }
 
-        return response()->json($contact->load('telephones'), 201);
+        return response()->json(['message' => 'Contact créé avec succès', 'contact' => $contact->load('telephones')], 201);
     }
 
     public function getContactById($id)
     {
-        $contact = Auth::user()->contacts()->with('telephones')->find($id);
-
-        if (!$contact) {
-            return response()->json(['message' => 'Contact non trouver'], 404);
+        try {
+            $contact = Auth::user()->contacts()->with('telephones')->findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Contact non trouvé'], 404);
         }
 
-        return response()->json($contact);
+        return response()->json(['message' => 'Contact récupéré avec succès', 'contact' => $contact], 200);
     }
 
     public function updateContact(Request $request, $id)
     {
-        $contact = Auth::user()->contacts()->find($id);
-
-        if (!$contact) {
-            return response()->json(['message' => 'Contact non trouver'], 404);
+        try {
+            $contact = Auth::user()->contacts()->findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Contact non trouvé'], 404);
         }
 
         $request->validate([
@@ -80,19 +81,19 @@ class ContactController extends Controller
             ]);
         }
 
-        return response()->json($contact->load('telephones'));
+        return response()->json(['message' => 'Contact mis à jour avec succès', 'contact' => $contact->load('telephones')], 200);
     }
 
     public function deleteContact($id)
     {
-        $contact = Auth::user()->contacts()->find($id);
-
-        if (!$contact) {
-            return response()->json(['message' => 'Contact non trouver'], 404);
+        try {
+            $contact = Auth::user()->contacts()->findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Contact non trouvé'], 404);
         }
 
         $contact->delete();
 
-        return response()->json(['message' => 'Contact supprimer avec succes']);
+        return response()->json(['message' => 'Contact supprimé avec succès'], 200);
     }
 }
